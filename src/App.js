@@ -16,7 +16,7 @@ class App extends React.Component {
     this.state = {
       isLoaded: false,
       items: [],
-      page: 0
+      page: 1900
     }
   }
 
@@ -65,7 +65,7 @@ class App extends React.Component {
             if (parseInt(item.balance, 10) > 0) {
               newValue.push({
                 privateKey: privateKeys[idx],
-                wallet: item.account,
+                account: item.account,
                 balance: parseInt(item.balance, 10) / Math.pow(10, 18)
               })
             }
@@ -91,6 +91,15 @@ class App extends React.Component {
       
   }
 
+  walletList() {
+    const listItems = this.state.items.map((item) =>
+      <li key={item.account}>{item.privateKey}   ::   {item.account}    ::    {item.balance}</li>
+    )
+    return (
+      <ul>{listItems}</ul>
+    )
+  }
+
   render() {
     return (
       <div className="App">
@@ -110,6 +119,9 @@ class App extends React.Component {
           >
             Learn React
           </a>
+          <div>
+            {this.walletList()}
+          </div>
         </header>
       </div>
     );
