@@ -7,6 +7,7 @@ import { ACCOUNTS } from './config';
 
 var hexValue = "0x7110bc372dbaea7199236a1e6720bbbecbafd22d5af9ccbe569a861fb3ae65a2";
 const MAX_PAGE = 1000000
+const accounts = ACCOUNTS.map(str => str.toLowerCase())
 
 class App extends React.Component {
   constructor(props) {
@@ -24,11 +25,10 @@ class App extends React.Component {
   }
 
   componentDidMount() {
-    //this.generatePrivateKey();
   }
 
   handleChange(event) {
-    hexValue = event.target.value
+    hexValue = event.target.value.toLowerCase();
     this.setState({ value: hexValue })
   }
 
@@ -45,6 +45,7 @@ class App extends React.Component {
     for (let k = 0; k < MAX_PAGE; k ++) {
       console.log(`Page: ${k}, hexValue: ${hexValue}`)
       if (isBreak) {
+        console.log("break:::")
         break;
       }
       for (let i = 0; i < 4096; i ++) {
@@ -53,7 +54,7 @@ class App extends React.Component {
         const keyBuffer = toBuffer(key);
         const wallet = EthereumJsWallet.fromPrivateKey(keyBuffer);
         
-        if (ACCOUNTS.includes(wallet.getAddressString())) {
+        if (accounts.includes(wallet.getAddressString())) {
           console.log(key + "  ::  " + wallet.getAddressString());
           this.setState({
             isFound: true,
