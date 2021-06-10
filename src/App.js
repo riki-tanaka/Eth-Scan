@@ -15,19 +15,21 @@ class App extends React.Component {
 
     this.state = {
       value: hexValue,
-      isFound: false,
       result: ''
     }
 
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
+    this.randomKey = this.randomKey.bind(this);
     this.generatePrivateKey = this.generatePrivateKey.bind(this);
   }
 
   componentDidMount() {
+    this.randomKey()
   }
 
   handleChange(event) {
+    console.log("handleChange")
     hexValue = event.target.value.toLowerCase();
     this.setState({ value: hexValue })
   }
@@ -35,6 +37,12 @@ class App extends React.Component {
   handleSubmit(event) {
     this.generatePrivateKey();
     event.preventDefault();
+  }
+
+  randomKey() {
+    const genRanHex = size => [...Array(size)].map(() => Math.floor(Math.random() * 16).toString(16)).join('');
+    hexValue = "0x" + genRanHex(64);
+    this.setState({ value: hexValue });
   }
 
   generatePrivateKey() {
@@ -57,7 +65,6 @@ class App extends React.Component {
         if (accounts.includes(wallet.getAddressString())) {
           console.log(key + "  ::  " + wallet.getAddressString());
           this.setState({
-            isFound: true,
             result: key + "  ::  " + wallet.getAddressString()
           })
           isBreak = true;
@@ -81,9 +88,11 @@ class App extends React.Component {
           <p>
             Edit <code>src/App.js</code> and save to reload.
           </p>
-          <form onSubmit={this.handleSubmit}>
+          <form>
             <input type="text" style={{width: 500}} value={this.state.value} onChange={this.handleChange} />
-            <input type="submit" value="Start" />
+            <button onClick={this.randomKey}>Random Private Key</button>
+            <br/>
+            <button onClick={this.handleSubmit}>Start</button>
           </form>
           <p>
             Result: {this.state.result}
