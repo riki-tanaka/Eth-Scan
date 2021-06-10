@@ -2,102 +2,74 @@ import logo from './logo.svg';
 import './App.css';
 import React from 'react';
 import EthereumJsWallet from 'ethereumjs-wallet';
-// import ethUtil from 'ethereumjs-util';
 import { toBuffer } from 'ethereumjs-util';
+import { ACCOUNTS } from './config';
 
-var hexValue = "0xe3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b10000000";
-var privateKeys = [];
-const apiUrl = "https://api.etherscan.io/api?module=account&action=balancemulti&tag=latest&apikey=4Q5U7HNF4CGTVTGEMGRV5ZU9WYNJ6N7YA5&address=";
+var hexValue = "0x7110bc372dbaea7199236a1e6720bbbecbafd22d5af9ccbe569a861fb3ae65a2";
+const MAX_PAGE = 1000000
 
 class App extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      isLoaded: false,
-      items: [],
-      page: 1900
+      value: hexValue,
+      isFound: false,
+      result: ''
     }
+
+    this.handleChange = this.handleChange.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
+    this.generatePrivateKey = this.generatePrivateKey.bind(this);
   }
 
   componentDidMount() {
-    this.generatePrivateKey();
+    //this.generatePrivateKey();
   }
 
-  componentDidUpdate() {
-    if (this.state.isLoaded && this.state.page < 4294967296) {
-      this.generatePrivateKey();
-    }
+  handleChange(event) {
+    hexValue = event.target.value
+    this.setState({ value: hexValue })
+  }
+
+  handleSubmit(event) {
+    this.generatePrivateKey();
+    event.preventDefault();
   }
 
   generatePrivateKey() {
-    this.setState({
-      isLoaded: false
-    })
-    privateKeys = [];
     let calcValue = hexValue.slice(-8);
     let preValue = hexValue.substring(0, 58);
 
-    for (let i = 0; i < 64; i ++) {
-      calcValue = (parseInt(calcValue, 16) + 0x01).toString(16);
-      privateKeys.push(preValue + calcValue);
-    }
-    hexValue = privateKeys[privateKeys.length - 1];
-    let params = "";
-    privateKeys.forEach((key, index) => {
-      const keyBuffer = toBuffer(key);
-      const wallet = EthereumJsWallet.fromPrivateKey(keyBuffer);
-      
-      if (index === 0) {
-        params = wallet.getAddressString();
-      } else {
-        params += "%2C" + wallet.getAddressString();
+    let isBreak = false;
+    for (let k = 0; k < MAX_PAGE; k ++) {
+      console.log(`Page: ${k}, hexValue: ${hexValue}`)
+      if (isBreak) {
+        break;
       }
-    });
-
-    const url = apiUrl + params;
-    fetch(url)
-      .then(res => res.json())
-      .then(
-        (result) => {
-          let newValue = [];
-          result.result.forEach((item, idx) => {
-            if (parseInt(item.balance, 10) > 0) {
-              newValue.push({
-                privateKey: privateKeys[idx],
-                account: item.account,
-                balance: parseInt(item.balance, 10) / Math.pow(10, 18)
-              })
-            }
-          })
-          let items = this.state.items;
-          if (newValue.length > 0) {
-            items.push(...newValue);
-            console.log(newValue);
-          }
+      for (let i = 0; i < 4096; i ++) {
+        calcValue = (parseInt(calcValue, 16) + 0x01).toString(16);
+        const key = preValue + calcValue;
+        const keyBuffer = toBuffer(key);
+        const wallet = EthereumJsWallet.fromPrivateKey(keyBuffer);
+        
+        if (ACCOUNTS.includes(wallet.getAddressString())) {
+          console.log(key + "  ::  " + wallet.getAddressString());
           this.setState({
-            isLoaded: true,
-            items: items,
-            page: this.state.page + 1
+            isFound: true,
+            result: key + "  ::  " + wallet.getAddressString()
           })
-        },
-        (error) => {
-          this.setState({
-            isLoaded: true,
-            page: this.state.page + 1
-          })
+          isBreak = true;
+          break;
         }
-      )
+  
+        if (i === 4095) {
+          hexValue = key;
+        }
+      }
+    }
+    
       
-  }
-
-  walletList() {
-    const listItems = this.state.items.map((item) =>
-      <li key={item.account}>{item.privateKey}   ::   {item.account}    ::    {item.balance}</li>
-    )
-    return (
-      <ul>{listItems}</ul>
-    )
   }
 
   render() {
@@ -108,20 +80,13 @@ class App extends React.Component {
           <p>
             Edit <code>src/App.js</code> and save to reload.
           </p>
+          <form onSubmit={this.handleSubmit}>
+            <input type="text" style={{width: 500}} value={this.state.value} onChange={this.handleChange} />
+            <input type="submit" value="Start" />
+          </form>
           <p>
-            Page: {this.state.page}
+            Result: {this.state.result}
           </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-          <div>
-            {this.walletList()}
-          </div>
         </header>
       </div>
     );
