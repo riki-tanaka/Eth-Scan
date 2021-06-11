@@ -46,16 +46,16 @@ class App extends React.Component {
   }
 
   generatePrivateKey() {
-    let calcValue = hexValue.slice(-8);
-    let preValue = hexValue.substring(0, 58);
 
     let isBreak = false;
     for (let k = 0; k < MAX_PAGE; k ++) {
-      console.log(`Page: ${k}, hexValue: ${hexValue}`)
+      let calcValue = hexValue.slice(-8);
+      let preValue = hexValue.substring(0, 58);
       if (isBreak) {
         console.log("break:::")
         break;
       }
+      console.log(`Page: ${k}, hexValue: ${hexValue}`)
       for (let i = 0; i < 4096; i ++) {
         calcValue = (parseInt(calcValue, 16) + 0x01).toString(16);
         const key = preValue + calcValue;
